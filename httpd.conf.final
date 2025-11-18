@@ -1,0 +1,250 @@
+# Auto generated apache config file by DirectAdmin version 1.688
+# Modifying this file is not recommended as any changes you make will be
+# overwritten when the user makes any changes to their website
+
+# For global config changes that affect all Users, see this guide:
+# http://help.directadmin.com/item.php?id=2
+# For local config changes that only affect one User, see this guide:
+# http://help.directadmin.com/item.php?id=3
+
+<Directory "/home/admin/public_html">
+                <FilesMatch "\.(inc|php|phtml|phps)$">
+                        <IfVersion = /^2.4.6[012]$/>
+                                ProxyFCGISetEnvIf "true" SCRIPT_FILENAME "%{unescape:%{SCRIPT_FILENAME}}"
+                        </IfVersion>
+                        AddHandler "proxy:unix:/usr/local/php83/sockets/admin.sock|fcgi://localhost" .inc .php .phtml
+                </FilesMatch>
+                <FilesMatch "\.(php53|php54|php55|php56|php70|php71|php72|php73|php74|php80|php81|php82)$">
+                        Order Allow,Deny
+                        Deny from all
+                </FilesMatch>
+</Directory>
+
+# ========================================
+# DOMINIO PRINCIPAL - codes-labs.com
+# Frontend Angular
+# ========================================
+
+<VirtualHost 69.164.244.24:80 >
+        ServerName www.codes-labs.com
+        ServerAlias www.codes-labs.com codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/codes-labs.com/public_html"
+        ScriptAlias /cgi-bin/ "/home/admin/domains/codes-labs.com/public_html/cgi-bin/"
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.error.log
+
+        # CRÍTICO: Permitir .well-known para Let's Encrypt (ANTES de redirección)
+        Alias /.well-known /home/admin/domains/codes-labs.com/public_html/.well-known
+        <Directory "/home/admin/domains/codes-labs.com/public_html/.well-known">
+                Options None
+                AllowOverride None
+                Require all granted
+        </Directory>
+
+        # Redirección HTTP a HTTPS (excepto .well-known)
+        RewriteEngine On
+        RewriteCond %{REQUEST_URI} !^/\.well-known
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+        <Directory "/home/admin/domains/codes-labs.com/public_html">
+                #PHP is OFF for this domain
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+                
+                # Configuración para SPA Angular - redirigir todas las rutas a index.html
+                RewriteEngine On
+                RewriteBase /
+                RewriteRule ^index\.html$ - [L]
+                RewriteCond %{REQUEST_FILENAME} !-f
+                RewriteCond %{REQUEST_FILENAME} !-d
+                RewriteRule . /index.html [L]
+        </Directory>
+
+        # Mail auto configuration (Thunderbird)
+        ProxyPassMatch "^/\.well-known/autoconfig/mail/config-v1\.1\.xml$" "unix:/usr/local/directadmin/shared/internal.sock|http://localhost"
+</VirtualHost>
+
+<VirtualHost 69.164.244.24:443 >
+        SSLEngine on
+        SSLCertificateFile /etc/letsencrypt/live/codes-labs.com/fullchain.pem
+        SSLCertificateKeyFile /etc/letsencrypt/live/codes-labs.com/privkey.pem
+        ServerName www.codes-labs.com
+        ServerAlias www.codes-labs.com codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/codes-labs.com/private_html"
+        ScriptAlias /cgi-bin/ /home/admin/domains/codes-labs.com/public_html/cgi-bin/
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.error.log
+
+        <Directory "/home/admin/domains/codes-labs.com/private_html">
+                #PHP is OFF for this domain
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+
+        # Mail auto configuration (Thunderbird)
+        ProxyPassMatch "^/\.well-known/autoconfig/mail/config-v1\.1\.xml$" "unix:/usr/local/directadmin/shared/internal.sock|http://localhost"
+</VirtualHost>
+
+# ========================================
+# SUBDOMINIO API - api.codes-labs.com
+# Backend Node.js: Puerto 3001
+# ========================================
+
+<VirtualHost 69.164.244.24:80 >
+        ServerName www.api.codes-labs.com
+        ServerAlias www.api.codes-labs.com api.codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html"
+        ScriptAlias /cgi-bin/ "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html/cgi-bin/"
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.api.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.api.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.api.error.log
+
+        # CRÍTICO: Permitir .well-known para Let's Encrypt (ANTES de redirección)
+        Alias /.well-known /home/admin/domains/api.codes-labs.com.codes-labs.com/public_html/.well-known
+        <Directory "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html/.well-known">
+                Options None
+                AllowOverride None
+                Require all granted
+        </Directory>
+
+        # Redirección HTTP a HTTPS (excepto .well-known)
+        RewriteEngine On
+        RewriteCond %{REQUEST_URI} !^/\.well-known
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+        <Directory "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html">
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+</VirtualHost>
+
+<VirtualHost 69.164.244.24:443 >
+        SSLEngine on
+        SSLCertificateFile /etc/letsencrypt/live/api.codes-labs.com/fullchain.pem
+        SSLCertificateKeyFile /etc/letsencrypt/live/api.codes-labs.com/privkey.pem
+        ServerName www.api.codes-labs.com
+        ServerAlias www.api.codes-labs.com api.codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html"
+        ScriptAlias /cgi-bin/ "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html/cgi-bin/"
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.api.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.api.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.api.error.log
+
+        # Configuración de Proxy - DEBE IR ANTES del Directory
+        ProxyPreserveHost On
+        ProxyRequests Off
+
+        # Proxy para /health (health check endpoint)
+        ProxyPass /health http://localhost:3001/health nocanon
+        ProxyPassReverse /health http://localhost:3001/health
+
+        # Proxy para /api (todos los endpoints de la API)
+        ProxyPass /api http://localhost:3001/api nocanon
+        ProxyPassReverse /api http://localhost:3001/api
+
+        # Headers CORS
+        Header always set Access-Control-Allow-Origin "https://codes-labs.com"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+        Header always set Access-Control-Allow-Credentials "true"
+
+        # Manejar preflight OPTIONS
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+
+        <Directory "/home/admin/domains/api.codes-labs.com.codes-labs.com/public_html">
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+</VirtualHost>
+
+# ========================================
+# SUBDOMINIO 1 - femimed.codes-labs.com
+# Backend: Puerto 3000
+# (CONFIGURACIÓN ORIGINAL RESTAURADA)
+# ========================================
+
+<VirtualHost 69.164.244.24:80 >
+        ServerName www.femimed.codes-labs.com
+        ServerAlias www.femimed.codes-labs.com femimed.codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/femimed.codes-labs.com/public_html"
+        ScriptAlias /cgi-bin/ "/home/admin/domains/femimed.codes-labs.com/public_html/cgi-bin/"
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.femimed.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.femimed.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.femimed.error.log
+
+        # Redirección HTTP a HTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+        <Directory "/home/admin/domains/femimed.codes-labs.com/public_html">
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+</VirtualHost>
+
+<VirtualHost 69.164.244.24:443 >
+        SSLEngine on
+        SSLCertificateFile /etc/letsencrypt/live/femimed.codes-labs.com/fullchain.pem
+        SSLCertificateKeyFile /etc/letsencrypt/live/femimed.codes-labs.com/privkey.pem
+        ServerName www.femimed.codes-labs.com
+        ServerAlias www.femimed.codes-labs.com femimed.codes-labs.com
+        ServerAdmin webmaster@codes-labs.com
+        DocumentRoot "/home/admin/domains/femimed.codes-labs.com/public_html"
+        ScriptAlias /cgi-bin/ "/home/admin/domains/femimed.codes-labs.com/public_html/cgi-bin/"
+        UseCanonicalName OFF
+        SuexecUserGroup admin admin
+        CustomLog /var/log/httpd/domains/codes-labs.com.femimed.bytes bytes
+        CustomLog /var/log/httpd/domains/codes-labs.com.femimed.log combined
+        ErrorLog /var/log/httpd/domains/codes-labs.com.femimed.error.log
+
+        # Proxy configurado ANTES del Directory para que se ejecute primero
+        ProxyPreserveHost On
+        ProxyRequests Off
+
+        # Proxy para /health (health check endpoint)
+        ProxyPass /health http://localhost:3000/health nocanon
+        ProxyPassReverse /health http://localhost:3000/health
+
+        # Proxy para /api usando ProxyPass directamente
+        ProxyPass /api http://localhost:3000/api nocanon
+        ProxyPassReverse /api http://localhost:3000/api
+
+        # Headers CORS
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+        <Directory "/home/admin/domains/femimed.codes-labs.com/public_html">
+                Options -Indexes +FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+</VirtualHost>
+
