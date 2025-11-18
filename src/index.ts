@@ -37,8 +37,43 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS Configuration
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:4200'];
+
+// Agregar orígenes de producción si no están incluidos
+const productionOrigins = [
+  'https://codes-labs.com',
+  'https://www.codes-labs.com',
+  'http://codes-labs.com',
+  'http://www.codes-labs.com'
+];
+
+productionOrigins.forEach(origin => {
+  if (!allowedOrigins.includes(origin)) {
+    allowedOrigins.push(origin);
+  }
+});
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Log para debugging (solo en desarrollo)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🌐 CORS Request from origin: ${origin}`);
+      console.log(`✅ Allowed origins:`, allowedOrigins);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      // Devolver el origen específico, no true
+      callback(null, origin);
+    } else {
+      console.warn(`❌ CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
