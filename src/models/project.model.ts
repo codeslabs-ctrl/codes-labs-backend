@@ -8,6 +8,7 @@ export interface Project {
   iconName: string;
   stats: { [key: string]: string };
   technologies: string[];
+  details?: ProjectDetail[];
   createdAt?: Date;
   updatedAt?: Date;
   isActive?: boolean;
@@ -25,6 +26,16 @@ export interface ProjectTechnology {
   id: string;
   projectId: string;
   technology: string;
+}
+
+export interface ProjectDetail {
+  id: string;
+  projectId: string;
+  projectDetail: string;
+  displayOrder: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive?: boolean;
 }
 
 export class ProjectModel {
@@ -88,6 +99,7 @@ export class ProjectModel {
     const project = result.rows[0];
     const stats = await this.getStatsByProjectId(project.id);
     const technologies = await this.getTechnologiesByProjectId(project.id);
+    const details = await this.getDetailsByProjectId(project.id);
 
     project.stats = {};
     stats.forEach(stat => {
@@ -95,6 +107,7 @@ export class ProjectModel {
     });
 
     project.technologies = technologies.map(t => t.technology);
+    project.details = details;
 
     return project;
   }
@@ -115,6 +128,24 @@ export class ProjectModel {
       FROM project_technologies
       WHERE project_id = $1
       ORDER BY technology ASC
+    `;
+    const result = await pool.query(query, [projectId]);
+    return result.rows;
+  }
+
+  private static async getDetailsByProjectId(projectId: string): Promise<ProjectDetail[]> {
+    const query = `
+      SELECT 
+        id,
+        project_id as "projectId",
+        project_detail as "projectDetail",
+        display_order as "displayOrder",
+        created_at as "createdAt",
+        updated_at as "updatedAt",
+        is_active as "isActive"
+      FROM projects_details
+      WHERE project_id = $1 AND is_active = true
+      ORDER BY display_order ASC, created_at ASC
     `;
     const result = await pool.query(query, [projectId]);
     return result.rows;
