@@ -137,6 +137,7 @@ export class ProjectModel {
   }
 
   static async getDetailsByProjectId(projectId: string): Promise<ProjectDetail[]> {
+    // Intentar con diferentes formatos del ID para compatibilidad
     const query = `
       SELECT 
         id,
@@ -147,14 +148,29 @@ export class ProjectModel {
         updated_at as "updatedAt",
         is_active as "isActive"
       FROM projects_details
-      WHERE project_id = $1 AND is_active = true
+      WHERE (project_id::text = $1 OR project_id = $1::uuid) AND is_active = true
       ORDER BY display_order ASC, created_at ASC
     `;
     try {
+      console.log(`🔍 Buscando detalles para projectId: ${projectId} (tipo: ${typeof projectId})`);
       const result = await pool.query(query, [projectId]);
       console.log(`📋 Detalles encontrados para proyecto ${projectId}:`, result.rows.length);
       if (result.rows.length > 0) {
-        console.log('📝 Primer detalle:', result.rows[0]);
+        console.log('📝 Primer detalle:', {
+          id: result.rows[0].id,
+          projectId: result.rows[0].projectId,
+          detailPreview: result.rows[0].projectDetail?.substring(0, 50)
+        });
+      } else {
+        // Intentar consulta alternativa sin filtro de is_active para debug
+        const debugQuery = `
+          SELECT COUNT(*) as total, 
+                 COUNT(*) FILTER (WHERE is_active = true) as active_count
+          FROM projects_details
+          WHERE project_id::text = $1 OR project_id = $1::uuid
+        `;
+        const debugResult = await pool.query(debugQuery, [projectId]);
+        console.log('🔍 Debug - Total detalles (activos/inactivos):', debugResult.rows[0]);
       }
       return result.rows;
     } catch (error) {

@@ -101,7 +101,7 @@ export class ProjectController {
       }
 
       // Actualizar proyecto
-      const updatedProject = await ProjectModel.update(id, {
+      await ProjectModel.update(id, {
         title,
         description,
         category,

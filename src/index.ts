@@ -14,7 +14,7 @@ import { notFoundHandler } from './middleware/notFound.middleware';
 import { testConnection } from './config/database.config';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002; // Puerto por defecto: 3002
 
 // Security Middleware
 app.use(helmet({
