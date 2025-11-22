@@ -109,6 +109,9 @@ export class ProjectModel {
     project.technologies = technologies.map(t => t.technology);
     project.details = details;
 
+    console.log(`✅ Proyecto ${project.id} cargado con ${details.length} detalles`);
+    console.log('📦 Detalles asignados:', project.details);
+
     return project;
   }
 
@@ -147,8 +150,17 @@ export class ProjectModel {
       WHERE project_id = $1 AND is_active = true
       ORDER BY display_order ASC, created_at ASC
     `;
-    const result = await pool.query(query, [projectId]);
-    return result.rows;
+    try {
+      const result = await pool.query(query, [projectId]);
+      console.log(`📋 Detalles encontrados para proyecto ${projectId}:`, result.rows.length);
+      if (result.rows.length > 0) {
+        console.log('📝 Primer detalle:', result.rows[0]);
+      }
+      return result.rows;
+    } catch (error) {
+      console.error('❌ Error al obtener detalles del proyecto:', error);
+      return [];
+    }
   }
 
   // ========== CRUD Methods ==========

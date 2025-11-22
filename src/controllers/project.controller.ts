@@ -21,6 +21,7 @@ export class ProjectController {
   async getById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      console.log(`🔍 Buscando proyecto con ID: ${id}`);
       const project = await ProjectModel.getById(id);
 
       if (!project) {
@@ -30,6 +31,9 @@ export class ProjectController {
         });
         return;
       }
+
+      console.log(`📤 Enviando proyecto con ${project.details?.length || 0} detalles`);
+      console.log('📋 Detalles en respuesta:', project.details);
 
       res.status(200).json({
         success: true,
